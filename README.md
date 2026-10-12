@@ -1,68 +1,71 @@
 # Scre.io Desktop
 
-Wrapper de escritorio para [app.scre.io](https://app.scre.io/#/): un *site-specific
-browser* basado en Electron que carga la app web en vivo y le agrega lo que un
-navegador no puede dar en Linux.
+[Español](README.es.md) · **English**
 
-> **Proyecto no oficial.** Este es un cliente de escritorio independiente y
-> comunitario. **No está afiliado, respaldado ni mantenido por Scre.io** ni por
-> sus autores. "Scre.io" y su logotipo son marcas y propiedad de sus respectivos
-> dueños; aquí se usan únicamente para identificar el servicio al que se conecta
-> la app.
+Desktop wrapper for [app.scre.io](https://app.scre.io/#/): an Electron-based
+*site-specific browser* that loads the live web app and adds what a browser
+can't provide on Linux.
 
-## Aviso
+> **Unofficial project.** This is an independent, community-made desktop client.
+> **It is not affiliated with, endorsed by, or maintained by Scre.io** or its
+> authors. "Scre.io" and its logo are trademarks and property of their
+> respective owners; they are used here only to identify the service the app
+> connects to.
 
-- Es un wrapper: carga la web oficial (`app.scre.io`) en una ventana de Electron.
-  **No copia, modifica ni reimplementa** el código ni los servidores de Scre.io, y
-  no incluye nada de su backend.
-- Todas las cuentas, grabaciones y datos se gestionan en el servicio oficial,
-  bajo sus propios términos y política de privacidad.
-- Si eres parte de Scre.io y prefieres que este repositorio cambie de nombre,
-  de icono o se retire, abre un issue y se atenderá.
-- Se ofrece "tal cual", sin garantías (ver [LICENSE](LICENSE)).
+## Notice
 
-## Por qué existe
+- It is a wrapper: it loads the official web app (`app.scre.io`) in an Electron
+  window. It **does not copy, modify, or reimplement** Scre.io's code or
+  servers, and ships nothing from their backend.
+- All accounts, recordings, and data are handled by the official service, under
+  its own terms and privacy policy.
+- If you represent Scre.io and would like this repository renamed, re-branded,
+  or taken down, open an issue and it will be addressed.
+- Provided "as is", without warranty (see [LICENSE](LICENSE)).
 
-Ningún navegador en Linux puede grabar el audio del sistema. Ni Chrome ni
-Firefox: `getDisplayMedia` no entrega pista de audio, y Scre.io responde con
-*"Pista de audio del sistema no encontrada"*.
+It does not modify or reimplement Scre.io. It is for personal use.
 
-La limitación no es de PipeWire — tu máquina expone `…Speaker__sink.monitor`
-perfectamente. Es que **Chromium filtra los dispositivos monitor** de
-`enumerateDevices()`, así que la página no tiene de dónde elegir.
+## Why it exists
 
-Un wrapper sí puede resolverlo, y esta app lo hace en dos piezas:
+No browser on Linux can record system audio. Neither Chrome nor Firefox:
+`getDisplayMedia` returns no audio track, and Scre.io responds with
+*"System audio track not found"*.
 
-1. **`pw-loopback`** publica una fuente *real* (`media.class=Audio/Source`) a
-   partir del sink por defecto. Al no ser un monitor, Chromium no la filtra.
-2. **Un shim en el mundo principal de la página** parchea `getDisplayMedia`: si
-   la plataforma no devolvió pista de audio, le engancha una tomada de esa
-   fuente.
+The limitation is not PipeWire's: a machine exposes `…Speaker__sink.monitor`
+just fine. The problem is that **Chromium filters monitor devices** out of
+`enumerateDevices()`, so the page has nothing to choose from.
 
-Resultado: el botón **"Sistema"** de Scre.io funciona sin tocar nada más. Y
-**"Sistema + Mic."** también, porque Scre.io ya mezcla el micrófono por su
-cuenta con WebAudio.
+A wrapper can solve it, and this app does so in two pieces:
 
-En Windows no hace falta nada de esto: ahí Electron soporta
-`Streams.audio = 'loopback'` de forma nativa y la app usa ese camino.
+1. **`pw-loopback`** publishes a *real* source (`media.class=Audio/Source`)
+   from the default sink. Since it is not a monitor, Chromium doesn't filter it.
+2. **A shim in the page's main world** patches `getDisplayMedia`: if the
+   platform returned no audio track, it attaches one taken from that source.
 
-## Requisitos del sistema
+Result: Scre.io's **"System"** button works with no further changes. So does
+**"System + Mic."**, because Scre.io already mixes the microphone itself with
+WebAudio.
+
+On Windows none of this is needed: Electron natively supports
+`Streams.audio = 'loopback'` there, and the app uses that path.
+
+## System requirements
 
 ### Linux
 
-| Componente | Para qué | Obligatorio |
+| Component | Purpose | Required |
 |---|---|---|
-| **PipeWire** (`pw-loopback`) | audio del sistema | no, pero sin él no hay audio de sistema |
-| **xdg-desktop-portal** + backend (`-hyprland`, `-gtk`, `-kde`…) | selector de pantalla en Wayland | sí, en Wayland |
-| **FUSE 2** | sólo para el AppImage | sólo AppImage |
+| **PipeWire** (`pw-loopback`) | system audio | no, but without it there is no system audio |
+| **xdg-desktop-portal** + backend (`-hyprland`, `-gtk`, `-kde`…) | screen picker on Wayland | yes, on Wayland |
+| **FUSE 2** | AppImage only | AppImage only |
 
-En X11 no se usa el portal: la app muestra su propio selector con miniaturas.
+On X11 the portal is not used: the app shows its own picker with thumbnails.
 
 ### Windows
 
-Nada adicional. El audio del sistema va por el loopback nativo de Electron.
+Nothing extra. System audio goes through Electron's native loopback.
 
-## Instalación
+## Installation
 
 ```bash
 # Arch / Manjaro / EndeavourOS
@@ -74,21 +77,21 @@ sudo dpkg -i screenio-desktop_0.1.0_amd64.deb
 # Fedora / RHEL / openSUSE
 sudo rpm -i screenio-desktop-0.1.0.x86_64.rpm
 
-# Cualquier distro (requiere fuse2)
+# Any distro (requires fuse2)
 chmod +x Scre.io-0.1.0.AppImage && ./Scre.io-0.1.0.AppImage
 
-# Cualquier distro, sin instalar
+# Any distro, no install
 tar xzf screenio-desktop-0.1.0.tar.gz && ./screenio-desktop-0.1.0/scre-io
 ```
 
-En Windows: descomprimir `Scre.io-0.1.0-win.zip` y ejecutar `Scre.io.exe`.
+On Windows: unzip `Scre.io-0.1.0-win.zip` and run `Scre.io.exe`.
 
-## Desarrollo
+## Development
 
 ```bash
 npm install
-npm start        # compila y arranca
-npm run dev      # igual, pero abre devtools
+npm start        # build and launch
+npm run dev      # same, but opens devtools
 npm run typecheck
 ```
 
@@ -100,103 +103,102 @@ npm run dist:linux
 npm run dist:win
 ```
 
-Los artefactos quedan en `release/`.
+Artifacts end up in `release/`.
 
-**Dependencias del build (en la máquina que compila):**
+**Build dependencies (on the machine that builds):**
 
-- `.rpm` necesita `rpmbuild` → `sudo pacman -S rpm-tools`
-- el instalador `.exe` (NSIS) necesita `wine` → `sudo pacman -S wine`
-- AppImage, `.deb`, `.pacman`, `.tar.gz` y el `.zip` de Windows no necesitan nada
+- `.rpm` needs `rpmbuild` → `sudo pacman -S rpm-tools`
+- the `.exe` installer (NSIS) needs `wine` → `sudo pacman -S wine`
+- AppImage, `.deb`, `.pacman`, `.tar.gz`, and the Windows `.zip` need nothing
 
-## Arquitectura
+## Architecture
 
 ```
-src/main/       proceso principal
-  index.ts        arranque, instancia única, ciclo de vida
-  window.ts       ventana y ajustes de seguridad
-  capture.ts      getDisplayMedia: portal en Wayland, selector propio en X11/Windows
-  systemAudio.ts  ciclo de vida de pw-loopback
-  audioShim.ts    parche de getDisplayMedia inyectado en la página
-  picker.ts       ventana del selector de fuentes (X11/Windows)
-  navigation.ts   enlaces externos al navegador del sistema
-  shortcuts.ts    atajos de navegador
-  offline.ts      página propia de reintento
-  useragent.ts    limpieza del UA
-src/preload/    superficies IPC mínimas (una para la app, otra para el selector)
+src/main/       main process
+  index.ts        startup, single instance, lifecycle
+  window.ts       window and security settings
+  capture.ts      getDisplayMedia: portal on Wayland, own picker on X11/Windows
+  systemAudio.ts  pw-loopback lifecycle
+  audioShim.ts    getDisplayMedia patch injected into the page
+  picker.ts       source picker window (X11/Windows)
+  navigation.ts   external links to the system browser
+  shortcuts.ts    browser shortcuts
+  offline.ts      own retry page
+  useragent.ts    UA cleanup
+src/preload/    minimal IPC surfaces (one for the app, one for the picker)
 src/renderer/   offline.html, picker.html
 ```
 
-### Seguridad
+### Security
 
 `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true`,
-`webSecurity: true`. El preload expone dos métodos y nada más; cada handler IPC
-valida el origen del frame que llama. Verificado en runtime: `require`,
-`process`, `module` e `ipcRenderer` son `undefined` en el contexto de la página.
+`webSecurity: true`. The preload exposes two methods and nothing else; each IPC
+handler validates the origin of the calling frame. Verified at runtime:
+`require`, `process`, `module`, and `ipcRenderer` are `undefined` in the page
+context.
 
-## Limitaciones conocidas
+## Known limitations
 
-**Una sola fuente por captura en Wayland.** PipeWire hace una única captura para
-pantallas y ventanas. Si se piden ambos tipos, la fuente elegida vuelve tipada
-como ventana. Es comportamiento documentado de Electron, no un error.
+**Only one source per capture on Wayland.** PipeWire does a single capture for
+screens and windows. If both types are requested, the chosen source comes back
+typed as a window. This is documented Electron behavior, not a bug.
 
-**La fuente de audio virtual es visible para todo el sistema.** Mientras la app
-esté abierta, *"Scre.io System Audio"* aparece en la lista de micrófonos de
-cualquier otra aplicación. Es inherente: para que Chromium la vea tiene que ser
-una fuente real. Desaparece al cerrar la app.
+**The virtual audio source is visible system-wide.** While the app is open,
+*"Scre.io System Audio"* appears in the microphone list of any other
+application. This is inherent: for Chromium to see it, it has to be a real
+source. It disappears when the app closes.
 
-**El WebM descargado no trae duración en la cabecera.** Es un defecto de
-`MediaRecorder`, no del wrapper: muchos reproductores no permiten buscar dentro
-del video. Scre.io lo compensa con su propio reproductor. Para arreglar el
-archivo:
+**The downloaded WebM has no duration in its header.** This is a
+`MediaRecorder` defect, not the wrapper's: many players can't seek within the
+video. Scre.io compensates with its own player. To fix the file:
 
 ```bash
-ffmpeg -i screen-capture.webm -c copy arreglado.webm
+ffmpeg -i screen-capture.webm -c copy fixed.webm
 ```
 
-**Encoder por software.** El flag `AcceleratedVideoEncoder` habilita encode por
-hardware (verificado: `video_encode` pasa de `disabled_software` a `enabled`), y
-Scre.io graba en H264, que VCN de AMD encodea por hardware. Todavía no está
-aplicado.
+**Software encoder.** The `AcceleratedVideoEncoder` flag enables hardware
+encoding (verified: `video_encode` goes from `disabled_software` to `enabled`),
+and Scre.io records H264, which AMD's VCN encodes in hardware. Not applied yet.
 
-**VAAPI y NVIDIA.** En AMD e Intel el encode por hardware funciona con el driver
-VAAPI del sistema. En NVIDIA hace falta `nvidia-vaapi-driver` y el soporte es
-más irregular.
+**VAAPI and NVIDIA.** On AMD and Intel, hardware encoding works with the
+system's VAAPI driver. On NVIDIA you need `nvidia-vaapi-driver` and support is
+patchier.
 
-## Estado
+## Status
 
-Implementado y verificado: ventana y paridad de navegador, captura de pantalla,
-audio del sistema, empaquetado.
+Implemented and verified: window and browser parity, screen capture, system
+audio, packaging.
 
-**Pendiente:** handlers de permisos explícitos (hoy rigen los defaults
-permisivos de Electron), gestión de descargas a carpeta configurable, bandeja
-del sistema, atajos globales, ventana de preferencias y flags de Chromium.
+**Pending:** explicit permission handlers (currently Electron's permissive
+defaults apply), downloads to a configurable folder, system tray, global
+shortcuts, preferences window, and Chromium flags.
 
 ## Troubleshooting
 
-**No aparece el diálogo para elegir pantalla.** Verificá que el portal esté
-corriendo:
+**The screen-selection dialog doesn't appear.** Check that the portal is
+running:
 ```bash
 ps aux | grep xdg-desktop-portal
 ```
-En Hyprland hace falta `xdg-desktop-portal-hyprland`.
+On Hyprland you need `xdg-desktop-portal-hyprland`.
 
-**No graba el audio del sistema.** Comprobá que la fuente virtual exista
-mientras la app corre:
+**System audio isn't recorded.** Check that the virtual source exists while the
+app is running:
 ```bash
 pactl list short sources | grep screio
 ```
-Si no está, mirá que `pw-loopback` esté instalado (`which pw-loopback`). La app
-avisa con una notificación si no pudo publicarla.
+If it isn't there, make sure `pw-loopback` is installed (`which pw-loopback`).
+The app shows a notification if it couldn't publish it.
 
-**El AppImage no arranca ("require FUSE").** Instalá FUSE 2
-(`sudo pacman -S fuse2`) o usá el `.tar.gz`, que no lo necesita.
+**The AppImage won't start ("require FUSE").** Install FUSE 2
+(`sudo pacman -S fuse2`) or use the `.tar.gz`, which doesn't need it.
 
-**Hyprland no agrupa la ventana con su lanzador.** Comprobá que la clase
-coincida:
+**Hyprland doesn't group the window with its launcher.** Check that the class
+matches:
 ```bash
 hyprctl clients -j | grep -i class
 ```
-Debe decir `scre-io`, igual que el `StartupWMClass` del `.desktop`.
+It must say `scre-io`, the same as the `.desktop` file's `StartupWMClass`.
 
-**Windows marca el ejecutable como no confiable.** Los binarios no están
-firmados digitalmente. SmartScreen va a advertir en la primera ejecución.
+**Windows flags the executable as untrusted.** The binaries are not digitally
+signed. SmartScreen will warn on first run.
