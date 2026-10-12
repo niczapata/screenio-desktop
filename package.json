@@ -1,0 +1,32 @@
+{
+  "name": "screenio-desktop",
+  "productName": "Scre.io",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Site-specific browser wrapper for Scre.io (app.scre.io)",
+  "author": {
+    "name": "nicolas",
+    "email": "nicozpata@gmail.com"
+  },
+  "license": "MIT",
+  "main": "dist/main/index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "copy:renderer": "mkdir -p dist/renderer && cp -r src/renderer/. dist/renderer/",
+    "build": "tsc -p tsconfig.json && npm run copy:renderer",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && SCREIO_DEV=1 electron .",
+    "dist": "npm run build && electron-builder --linux --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:win": "npm run build && electron-builder --win",
+    "pack": "npm run build && electron-builder --dir"
+  },
+  "devDependencies": {
+    "electron": "44.4.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^7.0.2"
+  },
+  "homepage": "https://scre.io",
+  "desktopName": "scre-io.desktop"
+}

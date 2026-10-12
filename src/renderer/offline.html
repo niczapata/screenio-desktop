@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sin conexión — Scre.io</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #f4f5f7;
+        --card: #ffffff;
+        --fg: #1a1d21;
+        --muted: #667085;
+        --border: #e3e6ea;
+        --accent: #1a73e8;
+        --accent-fg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181c;
+          --card: #1e2126;
+          --fg: #e8eaed;
+          --muted: #9aa0a6;
+          --border: #2c3036;
+          --accent: #4c8df6;
+          --accent-fg: #0b0d10;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background: var(--bg);
+        color: var(--fg);
+        font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      }
+      .card {
+        width: min(440px, 100%);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 32px;
+        text-align: center;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.06);
+      }
+      .icon { color: var(--muted); margin-bottom: 18px; }
+      h1 { margin: 0 0 8px; font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+      p { margin: 0 0 24px; color: var(--muted); font-size: 14px; }
+      button {
+        font: inherit;
+        font-weight: 550;
+        padding: 10px 22px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--accent);
+        color: var(--accent-fg);
+        cursor: pointer;
+        transition: filter 0.15s ease;
+      }
+      button:hover { filter: brightness(1.08); }
+      button:disabled { opacity: 0.6; cursor: default; filter: none; }
+      .status { margin-top: 16px; min-height: 18px; font-size: 13px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <svg class="icon" width="44" height="44" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+        <path d="M2 2 L22 22" />
+        <path d="M16.7 12.5a7 7 0 0 0-4.9-2.4M20.5 9.2a12 12 0 0 0-5.6-3" />
+        <path d="M7.3 12.5a7 7 0 0 1 2.2-1.5M3.5 9.2a12 12 0 0 1 4.2-2.6" />
+        <path d="M9.6 15.8a3.5 3.5 0 0 1 4.8 0" />
+        <circle cx="12" cy="19.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+      <h1>No se pudo conectar con Scre.io</h1>
+      <p>Comprobá tu conexión a internet. La app reintenta sola en cuanto la red vuelva.</p>
+      <button id="retry" type="button">Reintentar</button>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+    </main>
+
+    <script>
+      const btn = document.getElementById('retry');
+      const status = document.getElementById('status');
+
+      function retry() {
+        btn.disabled = true;
+        status.textContent = 'Reintentando…';
+        // If the load fails again, the main process re-serves this page and the
+        // button comes back enabled with it.
+        window.screenio.retryConnection();
+        setTimeout(() => {
+          btn.disabled = false;
+          status.textContent = '';
+        }, 4000);
+      }
+
+      btn.addEventListener('click', retry);
+
+      // Chromium fires this when the OS reports the network is back.
+      window.addEventListener('online', () => {
+        status.textContent = 'Conexión restablecida. Cargando…';
+        retry();
+      });
+
+      if (!navigator.onLine) status.textContent = 'Sin conexión de red.';
+    </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+appId: io.scre.desktop
+productName: Scre.io
+copyright: Wrapper de escritorio para app.scre.io
+
+directories:
+  output: release
+  buildResources: build
+
+# Only the compiled output ships. src/ and tsconfig are build-time only.
+files:
+  - dist/**/*
+  - package.json
+
+# The app loads a remote URL; there is nothing to unpack at runtime.
+asar: true
+compression: normal
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+    - target: rpm
+      arch: [x64]
+    - target: pacman
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+  category: AudioVideo
+  icon: build/icons
+  synopsis: Grabador de pantalla Scre.io
+  description: >
+    Cliente de escritorio para Scre.io con captura de pantalla vía
+    xdg-desktop-portal y captura de audio del sistema vía PipeWire.
+  # Must match the WM_CLASS the app actually reports, or Hyprland (and GNOME)
+  # will not associate the window with its launcher entry. Verified with
+  # `hyprctl clients`: the class is "scre-io".
+  executableName: scre-io
+  # Pins WM_CLASS to the .desktop basename (scre-io), which is what Hyprland
+  # matches against StartupWMClass. Without this the association is left to
+  # Electron's own guess and windows float free of their launcher entry.
+  syncDesktopName: true
+  desktop:
+    entry:
+      StartupWMClass: scre-io
+      Keywords: screen;recorder;capture;grabar;pantalla;
+
+# PipeWire is what makes system-audio capture possible; without it the app still
+# records, just without system sound. Declared as a recommendation rather than a
+# hard dependency so the package stays installable on non-PipeWire setups.
+deb:
+  depends:
+    - libgtk-3-0
+    - libnotify4
+    - libnss3
+    - libxss1
+    - libxtst6
+    - xdg-utils
+    - libatspi2.0-0
+    - libsecret-1-0
+  recommends:
+    - pipewire
+    - xdg-desktop-portal
+
+rpm:
+  depends:
+    - libnotify
+    - libXScrnSaver
+
+# electron-builder's built-in default `depends` list for pacman is stale and
+# wrong for a modern bundled Electron app: it includes things like
+# `http-parser`, `c-ares`, `libvpx`, `re2`, `snappy`... none of which exist as
+# standalone Arch packages anymore (they're vendored inside Electron itself —
+# see libffmpeg.so etc. in the packaged output). `http-parser` in particular
+# isn't in the Arch repos at all, which breaks `pacman -U` outright.
+#
+# Verified against the real binary (`ldd release/linux-unpacked/scre-io`):
+# these four are the only dynamically-linked libraries that pacman doesn't
+# already guarantee as part of a normal desktop install. Runtime extras
+# (pipewire, xdg-desktop-portal) are optional by nature — the app degrades
+# without them rather than failing to start — so they stay as README
+# recommendations rather than hard `depends`, matching how the .deb config
+# below uses `recommends` for the same two packages.
+pacman:
+  depends:
+    - gtk3
+    - nss
+    - libnotify
+    - libxss
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+    - target: zip
+      arch: [x64]
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Scre.io
